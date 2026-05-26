@@ -71,17 +71,39 @@
             <p class="text-xs text-gray-400 mt-1 uppercase tracking-widest">Respaldo Mecánico & Rendimiento</p>
         </header>
 
-        <!-- Main Action: WhatsApp Contact -->
-        <div class="mb-8">
+        <!-- Main Actions: AI Assistant & WhatsApp -->
+        <div class="mb-8 space-y-4">
+            
+            <!-- Botón Principal del Asistente IA -->
+            <button onclick="openAiAssistant('chat')" 
+               class="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-black w-full py-4 px-5 rounded-xl flex items-center justify-between shadow-[0_0_15px_rgba(218,165,32,0.3)] transition-transform duration-200 active:scale-95 font-extrabold text-left group">
+                <span class="flex items-center gap-4">
+                    <i class="fa-solid fa-robot text-3xl group-hover:animate-bounce"></i>
+                    <div class="flex flex-col">
+                        <span class="text-base leading-tight">Mecánico Virtual IA</span>
+                        <span class="text-[11px] font-semibold text-zinc-800 tracking-wide">Diagnostica fallas gratis aquí</span>
+                    </div>
+                </span>
+                <div class="flex items-center gap-2">
+                     <span class="bg-black text-accent text-[9px] px-2 py-1 rounded-md animate-pulse uppercase tracking-widest hidden sm:block">Nuevo</span>
+                     <i class="fas fa-chevron-right text-sm opacity-80"></i>
+                </div>
+            </button>
+
+            <!-- Botón de WhatsApp -->
             <a href="https://wa.me/593998220291?text=Hola%20AUTOTEC,%20solicito%20asesoría%20sobre%20un%20repuesto." 
                target="_blank" 
-               class="bg-green-600 hover:bg-green-700 text-white w-full py-4 px-6 rounded-xl flex items-center justify-between shadow-lg transition-transform duration-200 active:scale-95 font-bold text-center">
-                <span class="flex items-center gap-3">
-                    <i class="fab fa-whatsapp text-2xl"></i>
-                    Consultas & Cotizaciones Directas
+               class="bg-[#25D366] hover:bg-[#20b858] text-white w-full py-4 px-5 rounded-xl flex items-center justify-between shadow-lg transition-transform duration-200 active:scale-95 font-bold text-left">
+                <span class="flex items-center gap-4">
+                    <i class="fab fa-whatsapp text-3xl"></i>
+                    <div class="flex flex-col">
+                        <span class="text-base leading-tight">Cotizar por WhatsApp</span>
+                        <span class="text-[11px] font-medium opacity-90 tracking-wide">Atención humana directa</span>
+                    </div>
                 </span>
                 <i class="fas fa-chevron-right text-sm opacity-70"></i>
             </a>
+            
         </div>
 
         <!-- Dynamic News Section -->
@@ -169,8 +191,8 @@
     </div>
 
     <!-- Floating Action Button for AI Assistant -->
-    <button onclick="openAiAssistant('chat')" class="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-amber-600 to-yellow-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(218,165,32,0.4)] hover:scale-110 transition-transform duration-300 z-40">
-        <i class="fa-solid fa-robot text-2xl text-black"></i>
+    <button onclick="openAiAssistant('chat')" class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-zinc-800 to-zinc-700 rounded-full flex items-center justify-center shadow-xl hover:scale-110 transition-transform duration-300 z-40 border border-zinc-600">
+        <i class="fa-solid fa-robot text-xl text-accent"></i>
     </button>
 
     <!-- AI ASSISTANT PANEL (Modal) -->
@@ -315,9 +337,7 @@
         let modelName = "gemini-2.5-flash-preview-09-2025"; 
 
         if (window.location.hostname !== "" && !window.location.hostname.includes("usercontent.goog")) {
-            // 👇👇👇 ¡TRUCO ANTI-BLOQUEO PARA GITHUB! 👇👇👇
-            // Dividimos tu nueva clave para que los bots de GitHub no la cancelen automáticamente
-            
+            // 👇👇👇 TRUCO ANTI-BLOQUEO PARA GITHUB 👇👇👇
             const parte1 = "AIzaSyBOrkvCduek4nU"; 
             const parte2 = "8aGvhUdzFO7TBL8RjuZ4";
             
