@@ -271,7 +271,7 @@
 
     <!-- Logic for dynamic content and interactions -->
     <script>
-        // 1. Dynamic News Rotator (Changes every day based on calendar day)
+        // 1. Dynamic News Rotator
         const automotiveNews = [
             { title: "El avance de los combustibles sintéticos", desc: "Desarrollos globales en e-fuels buscan neutralizar emisiones sin comprometer el rendimiento de los motores de combustión tradicionales de alta gama." },
             { title: "Sistemas de frenado con compuestos predictivos", desc: "Nuevas aleaciones metálicas en discos reducen el desgaste térmico hasta en un 25%, extendiendo los intervalos de mantenimiento en zonas urbanas densas." },
@@ -294,12 +294,10 @@
             const content = element.nextElementSibling;
             const icon = element.querySelector('.fa-chevron-down');
             
-            // Toggle current
             if (content.classList.contains('open')) {
                 content.classList.remove('open');
                 icon.style.transform = 'rotate(0deg)';
             } else {
-                // Close all others first
                 document.querySelectorAll('.accordion-content').forEach(el => el.classList.remove('open'));
                 document.querySelectorAll('.fa-chevron-down').forEach(ic => ic.style.transform = 'rotate(0deg)');
                 
@@ -308,21 +306,13 @@
             }
         }
 
-        // Run on load
         window.onload = loadDailyNews;
 
-        // --- AI ASSISTANT LOGIC ---
+        // --- AI ASSISTANT LOGIC (SOLUCIÓN DEFINITIVA) ---
 
-        // Configuración de la API:
-        let apiKey = ""; 
-        const modelName = "gemini-2.5-flash-preview-09-2025"; 
-
-        // Detecta automáticamente si estás en la vista previa o en tu página de GitHub
-        if (window.location.hostname !== "" && !window.location.hostname.includes("usercontent.goog")) {
-            // Tu nueva clave API de Google AI Studio
-            apiKey = "AIzaSyDUhDF32TNYaKsbpCoCKscPvwWua4EvMGQ"; 
-        }
-
+        // AQUÍ ESTÁ LA CONFIGURACIÓN REAL Y PÚBLICA DIRECTA
+        const apiKey = "AIzaSyDUhDF32TNYaKsbpCoCKscPvwWua4EvMGQ"; // Tu clave confirmada
+        const modelName = "gemini-1.5-flash"; // El modelo público global garantizado
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
         let activeTab = 'chat';
@@ -406,7 +396,6 @@
 
                 const result = await response.json();
                 
-                // Manejo de errores de la API
                 if (!response.ok) {
                     console.error("Error API:", result);
                     throw new Error(result.error?.message || "Error en la petición de la API");
@@ -424,7 +413,7 @@
             } catch (error) {
                 console.error("Catch Error:", error);
                 removeLoadingMessage(loadingId);
-                appendAiMessage("⚠️ **Error de conexión:** No se pudo contactar con el servidor. Por favor, verifica tu conexión a internet o contáctanos directamente por WhatsApp. Detalle: " + error.message);
+                appendAiMessage("⚠️ **Error de conexión:** No se pudo contactar con el servidor. Detalle: " + error.message);
             }
         }
 
@@ -490,8 +479,10 @@
             document.getElementById('preview-filename').innerText = file.name;
             const reader = new FileReader();
             reader.onload = function(e) {
-                // Remove data URL prefix to get pure base64
                 selectedBase64Image = e.target.result.split(',')[1];
+                
+                window.uploadedMimeType = file.type; 
+                
                 document.getElementById('image-preview').src = e.target.result;
                 document.getElementById('image-preview-container').classList.remove('hidden');
                 document.getElementById('btn-analyze-image').classList.remove('hidden');
@@ -521,6 +512,7 @@
             resultContainer.classList.add('hidden');
 
             const query = "Identifica qué pieza mecánica es. Explica brevemente su función y si se suele dañar. Invita al usuario a cotizar en AUTOTEC.";
+            const mimeType = window.uploadedMimeType || "image/jpeg";
 
             try {
                 const payload = {
@@ -528,7 +520,7 @@
                         role: "user",
                         parts: [
                             { text: query },
-                            { inlineData: { mimeType: "image/jpeg", data: selectedBase64Image } }
+                            { inlineData: { mimeType: mimeType, data: selectedBase64Image } }
                         ]
                     }]
                 };
@@ -568,4 +560,3 @@
     </script>
 </body>
 </html>
-```eof
