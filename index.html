@@ -310,6 +310,576 @@
 
         // --- AI ASSISTANT LOGIC (SOLUCIÓN DEFINITIVA) ---
 
+        // Detección del entorno:
+        let apiKey = ""; // Por defecto vacío para que la vista previa aquí funcione
+        let modelName = "gemini-2.5-flash-preview-09-2025"; // Modelo para pruebas
+
+        // Si detectamos que estás en tu página web real de GitHub...
+        if (window.location.hostname !== "" && !window.location.hostname.includes("usercontent.goog")) {
+            // USAMOS TU CLAVE REAL DE GOOGLE
+            apiKey = "AIzaSyDUhDF32TNYaKsbpCoCKscPvwWua4EvMGQ"; 
+            // USAMOS EL MODELO PÚBLICO CORRECTO PARA TU CLAVE NUEVA
+            modelName = "gemini-2.5-flash"; 
+        }
+
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+        let activeTab = 'chat';
+        let selectedBase64Image = null;
+        let chatHistory = [];
+
+        const systemInstruction = `
+        Eres un asesor mecánico experto y vendedor de repuestos para AUTOTEC.
+        Ayuda al usuario a diagnosticar posibles problemas o identificar repuestos que necesiten.
+        Mantén respuestas breves (máx 2 párrafos cortos), amables y muy profesionales.
+        Al final, siempre invítalos a cerrar la consulta tocando el botón verde de "Consultar por WhatsApp" en la página principal para cotizar con un asesor humano en Ecuador (0998220291).
+        `;
+
+        function openAiAssistant(tab = 'chat') {
+            const modal = document.getElementById('ai-modal');
+            const container = document.getElementById('modal-container');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                container.classList.remove('translate-y-full');
+            }, 10);
+            switchTab(tab);
+        }
+
+        function closeAiAssistant() {
+            const modal = document.getElementById('ai-modal');
+            const container = document.getElementById('modal-container');
+            container.classList.add('translate-y-full');
+            modal.classList.remove('opacity-100');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            const tabChat = document.getElementById('tab-chat');
+            const tabPhoto = document.getElementById('tab-photo');
+            const contentChat = document.getElementById('content-chat');
+            const contentPhoto = document.getElementById('content-photo');
+            const chatInputArea = document.getElementById('chat-input-area');
+
+            if (tab === 'chat') {
+                tabChat.className = "flex-1 py-3 text-center font-bold text-accent border-b-2 border-accent transition-all";
+                tabPhoto.className = "flex-1 py-3 text-center font-semibold text-gray-400 hover:text-gray-200 transition-all";
+                contentChat.classList.remove('hidden');
+                contentPhoto.classList.add('hidden');
+                chatInputArea.classList.remove('hidden');
+            } else {
+                tabPhoto.className = "flex-1 py-3 text-center font-bold text-accent border-b-2 border-accent transition-all";
+                tabChat.className = "flex-1 py-3 text-center font-semibold text-gray-400 hover:text-gray-200 transition-all";
+                contentChat.classList.add('hidden');
+                contentPhoto.classList.remove('hidden');
+                chatInputArea.classList.add('hidden');
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') sendChatMessage();
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-message-input');
+            const query = input.value.trim();
+            if (!query) return;
+            input.value = '';
+
+            appendUserMessage(query);
+            const loadingId = appendLoadingMessage();
+
+            try {
+                chatHistory.push({ role: "user", parts: [{ text: query }] });
+                const payload = {
+                    contents: chatHistory,
+                    systemInstruction: { parts: [{ text: systemInstruction }] }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    console.error("Error API:", result);
+                    throw new Error(result.error?.message || "Error en la petición de la API");
+                }
+
+                const aiResponseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                removeLoadingMessage(loadingId);
+                if (aiResponseText) {
+                    appendAiMessage(aiResponseText);
+                    chatHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
+                } else {
+                    appendAiMessage("Disculpa, tuve un problema procesando tu consulta. Por favor, intenta de nuevo.");
+                }
+            } catch (error) {
+                console.error("Catch Error:", error);
+                removeLoadingMessage(loadingId);
+                appendAiMessage("⚠️ **Error de conexión:** No se pudo contactar con el servidor. Detalle: " + error.message);
+            }
+        }
+
+        function appendUserMessage(text) {
+            const chatContainer = document.getElementById('content-chat');
+            const msgHtml = `
+                <div class="flex items-start justify-end gap-2.5">
+                    <div class="bg-accent/10 border border-accent/20 p-3 rounded-2xl rounded-tr-none max-w-[85%] text-xs text-gray-200 leading-relaxed shadow-sm break-words">
+                        ${text}
+                    </div>
+                </div>`;
+            chatContainer.insertAdjacentHTML('beforeend', msgHtml);
+            scrollChatToBottom();
+        }
+
+        function appendAiMessage(text) {
+            const chatContainer = document.getElementById('content-chat');
+            const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+            const msgHtml = `
+                <div class="flex items-start gap-2.5">
+                    <div class="w-7 h-7 rounded bg-zinc-800 flex items-center justify-center text-accent text-xs flex-shrink-0">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div class="bg-zinc-900 p-3 rounded-2xl rounded-tl-none max-w-[85%] text-xs text-gray-300 leading-relaxed shadow-md break-words">
+                        ${formattedText}
+                    </div>
+                </div>`;
+            chatContainer.insertAdjacentHTML('beforeend', msgHtml);
+            scrollChatToBottom();
+        }
+
+        function appendLoadingMessage() {
+            const uniqueId = 'loading-' + Date.now();
+            const msgHtml = `
+                <div id="${uniqueId}" class="flex items-start gap-2.5">
+                    <div class="w-7 h-7 rounded bg-zinc-800 flex items-center justify-center text-accent text-xs animate-pulse flex-shrink-0">
+                        <i class="fa-solid fa-robot animate-spin"></i>
+                    </div>
+                    <div class="bg-zinc-900 p-3 rounded-2xl rounded-tl-none text-xs text-gray-500">
+                        Analizando...
+                    </div>
+                </div>`;
+            document.getElementById('content-chat').insertAdjacentHTML('beforeend', msgHtml);
+            scrollChatToBottom();
+            return uniqueId;
+        }
+
+        function removeLoadingMessage(id) {
+            const loadingEl = document.getElementById(id);
+            if (loadingEl) loadingEl.remove();
+        }
+
+        function scrollChatToBottom() {
+            const chatContainer = document.getElementById('content-chat');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // --- PHOTO ANALYSIS LOGIC ---
+        function handleImageSelection(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('preview-filename').innerText = file.name;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedBase64Image = e.target.result.split(',')[1];
+                
+                window.uploadedMimeType = file.type; 
+                
+                document.getElementById('image-preview').src = e.target.result;
+                document.getElementById('image-preview-container').classList.remove('hidden');
+                document.getElementById('btn-analyze-image').classList.remove('hidden');
+                document.getElementById('upload-label').innerText = "Cambiar foto";
+                document.getElementById('analysis-result-container').classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearSelectedImage() {
+            selectedBase64Image = null;
+            document.getElementById('image-upload').value = '';
+            document.getElementById('image-preview-container').classList.add('hidden');
+            document.getElementById('btn-analyze-image').classList.add('hidden');
+            document.getElementById('analysis-result-container').classList.add('hidden');
+            document.getElementById('upload-label').innerText = "Seleccionar foto";
+        }
+
+        async function analyzePartImage() {
+            if (!selectedBase64Image) return;
+
+            const analyzeBtn = document.getElementById('btn-analyze-image');
+            const resultContainer = document.getElementById('analysis-result-container');
+            
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin mr-2"></i> Analizando...`;
+            resultContainer.classList.add('hidden');
+
+            const query = "Identifica qué pieza mecánica es. Explica brevemente su función y si se suele dañar. Invita al usuario a cotizar en AUTOTEC.";
+            const mimeType = window.uploadedMimeType || "image/jpeg";
+
+            try {
+                const payload = {
+                    contents: [{
+                        role: "user",
+                        parts: [
+                            { text: query },
+                            { inlineData: { mimeType: mimeType, data: selectedBase64Image } }
+                        ]
+                    }]
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                 if (!response.ok) {
+                    console.error("Error API:", result);
+                    throw new Error(result.error?.message || "Error en la petición de la API");
+                }
+
+                const aiResultText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (aiResultText) {
+                    const formattedResult = aiResultText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+                    resultContainer.innerHTML = `
+                        <div class="text-accent font-bold mb-2 flex items-center"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Análisis Completado</div>
+                        <div class="break-words">${formattedResult}</div>`;
+                } else {
+                    resultContainer.innerHTML = `<span class="text-red-400">No pude identificar la pieza claramente en la imagen.</span>`;
+                }
+            } catch (error) {
+                console.error("Catch Error:", error);
+                resultContainer.innerHTML = `<span class="text-red-400">⚠️ Error de conexión: ${error.message}</span>`;
+            } finally {
+                resultContainer.classList.remove('hidden');
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerText = "Analizar Imagen";
+            }
+        }
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUTOTEC - Enlace Oficial</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a;
+            color: #f5f5f5;
+        }
+        .text-accent { color: #DAA520; } /* Dorado Ámbar */
+        .bg-accent { background-color: #DAA520; }
+        .border-accent { border-color: #DAA520; }
+        .bg-card { background-color: #2c2c2c; }
+        
+        .mobile-container {
+            max-width: 430px;
+            margin: auto;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            background: linear-gradient(180deg, #1f1f1f 0%, #121212 100%);
+        }
+
+        /* Accordion transition utility */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+        .accordion-content.open {
+            padding-top: 1rem;
+            max-height: 200px; /* Ajuste dinámico de altura máxima */
+        }
+        
+        /* Chat scrollbar customization */
+        .chat-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background-color: #3f3f46;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body class="bg-black">
+
+    <div class="mobile-container shadow-2xl">
+        <!-- Profile Header -->
+        <header class="text-center mb-6">
+            <div class="w-20 h-20 mx-auto bg-card rounded-full border-2 border-accent flex items-center justify-center shadow-lg mb-3">
+                <span class="text-3xl font-black text-accent tracking-tighter">AT</span>
+            </div>
+            <h1 class="text-2xl font-extrabold text-white tracking-wider">AUTOTEC</h1>
+            <p class="text-xs text-gray-400 mt-1 uppercase tracking-widest">Respaldo Mecánico & Rendimiento</p>
+        </header>
+
+        <!-- Main Action: WhatsApp Contact -->
+        <div class="mb-8">
+            <a href="https://wa.me/593998220291?text=Hola%20AUTOTEC,%20solicito%20asesoría%20sobre%20un%20repuesto." 
+               target="_blank" 
+               class="bg-green-600 hover:bg-green-700 text-white w-full py-4 px-6 rounded-xl flex items-center justify-between shadow-lg transition-transform duration-200 active:scale-95 font-bold text-center">
+                <span class="flex items-center gap-3">
+                    <i class="fab fa-whatsapp text-2xl"></i>
+                    Consultas & Cotizaciones Directas
+                </span>
+                <i class="fas fa-chevron-right text-sm opacity-70"></i>
+            </a>
+        </div>
+
+        <!-- Dynamic News Section -->
+        <section class="bg-card rounded-xl p-5 mb-8 border border-gray-800 shadow-md">
+            <div class="flex items-center gap-2 mb-3 text-accent text-xs font-bold uppercase tracking-wider">
+                <i class="fas fa-newspaper animate-pulse"></i>
+                <span>Noticia Automotriz del Día</span>
+            </div>
+            <h2 id="news-title" class="text-base font-bold text-white leading-snug mb-2">Cargando actualización...</h2>
+            <p id="news-desc" class="text-sm text-gray-400 leading-relaxed">Espere un momento por favor.</p>
+        </section>
+
+        <!-- Preventive Maintenance Tips Section -->
+        <section class="space-y-3">
+            <div class="text-center text-gray-500 text-xs font-semibold uppercase tracking-widest mb-4">
+                Consejos de Mantenimiento Preventivo
+            </div>
+
+            <!-- Tip 1 -->
+            <div class="bg-card rounded-xl border border-gray-800 overflow-hidden shadow-sm">
+                <button onclick="toggleAccordion(this)" class="w-full p-4 flex items-center justify-between text-left focus:outline-none">
+                    <span class="flex items-center gap-3 font-semibold text-sm text-gray-200">
+                        <i class="fas fa-oil-can text-accent text-base w-5 text-center"></i>
+                        El Corazón del Motor: Lubricación
+                    </span>
+                    <i class="fas fa-chevron-down text-xs text-gray-500 transition-transform duration-200"></i>
+                </button>
+                <div class="accordion-content px-4 pb-4 text-xs text-gray-400 leading-relaxed border-t border-gray-800/50">
+                    No excedas el kilometraje de tu aceite (5,000 km para mineral o 10,000 km para sintético). Un cambio a tiempo evita la fricción interna extrema y previene fallas costosas en el bloque o cabezote.
+                </div>
+            </div>
+
+            <!-- Tip 2 -->
+            <div class="bg-card rounded-xl border border-gray-800 overflow-hidden shadow-sm">
+                <button onclick="toggleAccordion(this)" class="w-full p-4 flex items-center justify-between text-left focus:outline-none">
+                    <span class="flex items-center gap-3 font-semibold text-sm text-gray-200">
+                        <i class="fas fa-compact-disc text-accent text-base w-5 text-center"></i>
+                        Seguridad Vial: Sistema de Frenado
+                    </span>
+                    <i class="fas fa-chevron-down text-xs text-gray-500 transition-transform duration-200"></i>
+                </button>
+                <div class="accordion-content px-4 pb-4 text-xs text-gray-400 leading-relaxed border-t border-gray-800/50">
+                    Revisa las pastillas cada 20,000 km. Reemplazarlas antes de que toquen el metal protege la vida útil de tus discos de freno ventilados y garantiza una respuesta de frenado inmediata ante emergencias.
+                </div>
+            </div>
+
+            <!-- Tip 3 -->
+            <div class="bg-card rounded-xl border border-gray-800 overflow-hidden shadow-sm">
+                <button onclick="toggleAccordion(this)" class="w-full p-4 flex items-center justify-between text-left focus:outline-none">
+                    <span class="flex items-center gap-3 font-semibold text-sm text-gray-200">
+                        <i class="fas fa-car-crush text-accent text-base w-5 text-center"></i>
+                        Estabilidad Segura: Suspensión
+                    </span>
+                    <i class="fas fa-chevron-down text-xs text-gray-500 transition-transform duration-200"></i>
+                </button>
+                <div class="accordion-content px-4 pb-4 text-xs text-gray-400 leading-relaxed border-t border-gray-800/50">
+                    Golpes constantes en baches rompen bujes y desgastan amortiguadores. Una revisión anual del tren delantero evita el desgaste irregular de los neumáticos y mantiene la adherencia correcta en curvas.
+                </div>
+            </div>
+
+            <!-- Tip 4 -->
+            <div class="bg-card rounded-xl border border-gray-800 overflow-hidden shadow-sm">
+                <button onclick="toggleAccordion(this)" class="w-full p-4 flex items-center justify-between text-left focus:outline-none">
+                    <span class="flex items-center gap-3 font-semibold text-sm text-gray-200">
+                        <i class="fas fa-temperature-high text-accent text-base w-5 text-center"></i>
+                        Evita Sobretensiones: Refrigeración
+                    </span>
+                    <i class="fas fa-chevron-down text-xs text-gray-500 transition-transform duration-200"></i>
+                </button>
+                <div class="accordion-content px-4 pb-4 text-xs text-gray-400 leading-relaxed border-t border-gray-800/50">
+                    Nunca utilices agua común en el radiador; deteriora las celdas y acelera la corrosión. Utiliza refrigerante de alta calidad para mantener la temperatura óptima del motor y proteger la bomba de agua.
+                </div>
+            </div>
+        </section>
+
+        <!-- Secondary Footprint / Social Connections -->
+        <footer class="mt-10 text-center border-t border-gray-900 pt-6">
+            <div class="flex justify-center space-x-6 text-gray-500 mb-6">
+                <a href="#" class="hover:text-accent transition-colors"><i class="fab fa-instagram text-xl"></i></a>
+                <a href="#" class="hover:text-accent transition-colors"><i class="fab fa-facebook text-xl"></i></a>
+                <a href="#" class="hover:text-accent transition-colors"><i class="fab fa-tiktok text-xl"></i></a>
+            </div>
+            <p class="text-[10px] text-gray-600 tracking-wider">&copy; 2026 AUTOTEC. Todos los derechos reservados.</p>
+        </footer>
+    </div>
+
+    <!-- Floating Action Button for AI Assistant -->
+    <button onclick="openAiAssistant('chat')" class="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-amber-600 to-yellow-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(218,165,32,0.4)] hover:scale-110 transition-transform duration-300 z-40">
+        <i class="fa-solid fa-robot text-2xl text-black"></i>
+    </button>
+
+    <!-- AI ASSISTANT PANEL (Modal) -->
+    <div id="ai-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-end md:items-center z-50 hidden transition-opacity duration-300">
+        <div class="bg-[#121212] w-full md:max-w-[440px] rounded-t-3xl md:rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden flex flex-col h-[85vh] md:h-[650px] transform translate-y-full md:translate-y-0 transition-transform duration-300" id="modal-container">
+            
+            <!-- Modal Header -->
+            <div class="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-black">
+                        <i class="fa-solid fa-sparkles text-sm"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-extrabold text-white" id="modal-title">Asistente AI AUTOTEC</h2>
+                        <span class="text-[9px] text-green-400 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Activo
+                        </span>
+                    </div>
+                </div>
+                <button onclick="closeAiAssistant()" class="w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-gray-400 flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Tab Selectors -->
+            <div class="flex border-b border-zinc-800/80 bg-zinc-950 text-xs">
+                <button id="tab-chat" onclick="switchTab('chat')" class="flex-1 py-3 text-center font-bold text-accent border-b-2 border-accent transition-all">
+                    <i class="fa-solid fa-comments mr-1.5"></i> Chat Mecánico
+                </button>
+                <button id="tab-photo" onclick="switchTab('photo')" class="flex-1 py-3 text-center font-semibold text-gray-400 hover:text-gray-200 transition-all">
+                    <i class="fa-solid fa-camera-retro mr-1.5"></i> Foto Análisis
+                </button>
+            </div>
+
+            <!-- Modal Content - Chat Tab -->
+            <div id="content-chat" class="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll">
+                <!-- System Welcome -->
+                <div class="flex items-start gap-2.5">
+                    <div class="w-7 h-7 rounded bg-zinc-800 flex items-center justify-center text-accent text-xs">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div class="bg-zinc-900 p-3 rounded-2xl rounded-tl-none max-w-[85%] text-xs text-gray-300 leading-relaxed shadow-md">
+                        ¡Hola! Soy tu <strong>Mecánico Virtual de AUTOTEC</strong>. ¿Qué ruido extraño hace tu auto hoy o qué pieza estás buscando? Cuéntame y te guiaré.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Content - Photo Tab -->
+            <div id="content-photo" class="hidden flex-1 overflow-y-auto p-5 space-y-4 chat-scroll flex flex-col justify-center items-center text-center">
+                <div class="w-16 h-16 rounded-2xl bg-amber-500/10 text-accent flex items-center justify-center mb-2 shadow-inner">
+                    <i class="fa-solid fa-camera text-2xl"></i>
+                </div>
+                <h3 class="text-sm font-bold text-white">Escáner de Repuestos</h3>
+                <p class="text-xs text-gray-400 max-w-[280px] leading-relaxed">
+                    Sube una foto de la pieza que necesitas reemplazar y te ayudaré a identificarla.
+                </p>
+
+                <!-- File Input Area -->
+                <div class="w-full mt-4">
+                    <label for="image-upload" class="cursor-pointer w-full bg-zinc-900 hover:bg-zinc-800 border border-dashed border-zinc-700 hover:border-accent p-6 rounded-2xl flex flex-col items-center justify-center transition-all group">
+                        <i class="fa-solid fa-cloud-arrow-up text-xl text-gray-500 group-hover:text-accent mb-2"></i>
+                        <span class="text-xs font-semibold text-gray-300 group-hover:text-white" id="upload-label">Seleccionar foto</span>
+                    </label>
+                    <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="handleImageSelection(event)">
+                </div>
+
+                <!-- Preview Area -->
+                <div id="image-preview-container" class="hidden w-full bg-zinc-900 p-3 rounded-2xl border border-zinc-800 flex items-center justify-between">
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <img id="image-preview" src="#" alt="Preview" class="w-12 h-12 rounded-lg object-cover flex-shrink-0">
+                        <span class="text-left text-xs font-medium text-gray-300 truncate max-w-[120px]" id="preview-filename">archivo.jpg</span>
+                    </div>
+                    <button onclick="clearSelectedImage()" class="text-gray-500 hover:text-red-400 text-sm p-2 flex-shrink-0">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+
+                <!-- Run Analysis Button -->
+                <button id="btn-analyze-image" onclick="analyzePartImage()" class="hidden w-full bg-accent hover:bg-yellow-600 text-black font-extrabold py-3 rounded-xl text-xs transition-colors shadow-lg mt-4">
+                    Analizar Imagen
+                </button>
+
+                <!-- Analysis Result Display -->
+                <div id="analysis-result-container" class="hidden w-full text-left bg-zinc-900 p-4 rounded-2xl border border-zinc-800 text-xs leading-relaxed text-gray-300 mt-4">
+                </div>
+            </div>
+
+            <!-- Modal Footer / Input (For Chat Tab) -->
+            <div id="chat-input-area" class="p-3 border-t border-zinc-800 bg-zinc-950 flex items-center space-x-2">
+                <input type="text" id="chat-message-input" placeholder="Escribe tu consulta..." class="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-accent transition-all" onkeypress="handleKeyPress(event)">
+                <button onclick="sendChatMessage()" class="w-10 h-10 rounded-xl bg-accent hover:bg-yellow-600 text-black flex items-center justify-center shadow-lg transition-colors flex-shrink-0">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Logic for dynamic content and interactions -->
+    <script>
+        // 1. Dynamic News Rotator
+        const automotiveNews = [
+            { title: "El avance de los combustibles sintéticos", desc: "Desarrollos globales en e-fuels buscan neutralizar emisiones sin comprometer el rendimiento de los motores de combustión tradicionales de alta gama." },
+            { title: "Sistemas de frenado con compuestos predictivos", desc: "Nuevas aleaciones metálicas en discos reducen el desgaste térmico hasta en un 25%, extendiendo los intervalos de mantenimiento en zonas urbanas densas." },
+            { title: "Sensores avanzados de tren delantero", desc: "Componentes modernos de suspensión integran sensores de fatiga de material que alertan directamente a la computadora antes de una ruptura inminente." },
+            { title: "Fórmulas de aceites sintéticos de ultra baja fricción", desc: "Las nuevas especificaciones de lubricantes optimizan los arranques en frío, protegiendo los turbocompresores en motores downsizing de alta presión." },
+            { title: "Evolución en la gestión térmica de motores", desc: "Sistemas electrónicos reemplazan los termostatos mecánicos tradicionales, permitiendo un control exacto de la temperatura para proteger empaques críticos." }
+        ];
+
+        function loadDailyNews() {
+            const currentDay = new Date().getDate();
+            const newsIndex = currentDay % automotiveNews.length;
+            const todayNews = automotiveNews[newsIndex];
+            
+            document.getElementById('news-title').innerText = todayNews.title;
+            document.getElementById('news-desc').innerText = todayNews.desc;
+        }
+
+        // 2. Accordion Action for Tips
+        function toggleAccordion(element) {
+            const content = element.nextElementSibling;
+            const icon = element.querySelector('.fa-chevron-down');
+            
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                document.querySelectorAll('.accordion-content').forEach(el => el.classList.remove('open'));
+                document.querySelectorAll('.fa-chevron-down').forEach(ic => ic.style.transform = 'rotate(0deg)');
+                
+                content.classList.add('open');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        window.onload = loadDailyNews;
+
+        // --- AI ASSISTANT LOGIC (SOLUCIÓN DEFINITIVA) ---
+
         // AQUÍ ESTÁ LA CONFIGURACIÓN REAL Y PÚBLICA DIRECTA
         const apiKey = "AIzaSyDUhDF32TNYaKsbpCoCKscPvwWua4EvMGQ"; // Tu clave confirmada
         const modelName = "gemini-2.5-flash-preview-09-2025"; // MODELO CORREGIDO Y COMPROBADO
