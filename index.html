@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AUTOTEC - Enlace Oficial</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2 family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
@@ -42,11 +45,24 @@
             padding-top: 1rem;
             max-height: 200px; /* Ajuste dinámico de altura máxima */
         }
+        
+        /* Chat scrollbar customization */
+        .chat-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background-color: #3f3f46;
+            border-radius: 20px;
+        }
     </style>
 </head>
 <body class="bg-black">
 
     <div class="mobile-container shadow-2xl">
+        <!-- Profile Header -->
         <header class="text-center mb-6">
             <div class="w-20 h-20 mx-auto bg-card rounded-full border-2 border-accent flex items-center justify-center shadow-lg mb-3">
                 <span class="text-3xl font-black text-accent tracking-tighter">AT</span>
@@ -55,6 +71,7 @@
             <p class="text-xs text-gray-400 mt-1 uppercase tracking-widest">Respaldo Mecánico & Rendimiento</p>
         </header>
 
+        <!-- Main Action: WhatsApp Contact -->
         <div class="mb-8">
             <a href="https://wa.me/593998220291?text=Hola%20AUTOTEC,%20solicito%20asesoría%20sobre%20un%20repuesto." 
                target="_blank" 
@@ -67,6 +84,7 @@
             </a>
         </div>
 
+        <!-- Dynamic News Section -->
         <section class="bg-card rounded-xl p-5 mb-8 border border-gray-800 shadow-md">
             <div class="flex items-center gap-2 mb-3 text-accent text-xs font-bold uppercase tracking-wider">
                 <i class="fas fa-newspaper animate-pulse"></i>
@@ -76,11 +94,13 @@
             <p id="news-desc" class="text-sm text-gray-400 leading-relaxed">Espere un momento por favor.</p>
         </section>
 
+        <!-- Preventive Maintenance Tips Section -->
         <section class="space-y-3">
             <div class="text-center text-gray-500 text-xs font-semibold uppercase tracking-widest mb-4">
                 Consejos de Mantenimiento Preventivo
             </div>
 
+            <!-- Tip 1 -->
             <div class="bg-card rounded-xl border border-gray-800 overflow-hidden shadow-sm">
                 <button onclick="toggleAccordion(this)" class="w-full p-4 flex items-center justify-between text-left focus:outline-none">
                     <span class="flex items-center gap-3 font-semibold text-sm text-gray-200">
@@ -94,6 +114,7 @@
                 </div>
             </div>
 
+            <!-- Tip 2 -->
             <div class="bg-card rounded-xl border border-gray-800 overflow-hidden shadow-sm">
                 <button onclick="toggleAccordion(this)" class="w-full p-4 flex items-center justify-between text-left focus:outline-none">
                     <span class="flex items-center gap-3 font-semibold text-sm text-gray-200">
@@ -107,6 +128,7 @@
                 </div>
             </div>
 
+            <!-- Tip 3 -->
             <div class="bg-card rounded-xl border border-gray-800 overflow-hidden shadow-sm">
                 <button onclick="toggleAccordion(this)" class="w-full p-4 flex items-center justify-between text-left focus:outline-none">
                     <span class="flex items-center gap-3 font-semibold text-sm text-gray-200">
@@ -120,6 +142,7 @@
                 </div>
             </div>
 
+            <!-- Tip 4 -->
             <div class="bg-card rounded-xl border border-gray-800 overflow-hidden shadow-sm">
                 <button onclick="toggleAccordion(this)" class="w-full p-4 flex items-center justify-between text-left focus:outline-none">
                     <span class="flex items-center gap-3 font-semibold text-sm text-gray-200">
@@ -134,6 +157,7 @@
             </div>
         </section>
 
+        <!-- Secondary Footprint / Social Connections -->
         <footer class="mt-10 text-center border-t border-gray-900 pt-6">
             <div class="flex justify-center space-x-6 text-gray-500 mb-6">
                 <a href="#" class="hover:text-accent transition-colors"><i class="fab fa-instagram text-xl"></i></a>
@@ -215,29 +239,29 @@
 
                 <!-- Preview Area -->
                 <div id="image-preview-container" class="hidden w-full bg-zinc-900 p-3 rounded-2xl border border-zinc-800 flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <img id="image-preview" src="#" alt="Preview" class="w-12 h-12 rounded-lg object-cover">
-                        <span class="text-left text-xs font-medium text-gray-300 truncate max-w-[150px]" id="preview-filename">archivo.jpg</span>
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <img id="image-preview" src="#" alt="Preview" class="w-12 h-12 rounded-lg object-cover flex-shrink-0">
+                        <span class="text-left text-xs font-medium text-gray-300 truncate max-w-[120px]" id="preview-filename">archivo.jpg</span>
                     </div>
-                    <button onclick="clearSelectedImage()" class="text-gray-500 hover:text-red-400 text-sm p-1">
+                    <button onclick="clearSelectedImage()" class="text-gray-500 hover:text-red-400 text-sm p-2 flex-shrink-0">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
 
                 <!-- Run Analysis Button -->
-                <button id="btn-analyze-image" onclick="analyzePartImage()" class="hidden w-full bg-accent hover:bg-yellow-600 text-black font-extrabold py-3 rounded-xl text-xs transition-colors shadow-lg">
+                <button id="btn-analyze-image" onclick="analyzePartImage()" class="hidden w-full bg-accent hover:bg-yellow-600 text-black font-extrabold py-3 rounded-xl text-xs transition-colors shadow-lg mt-4">
                     Analizar Imagen
                 </button>
 
                 <!-- Analysis Result Display -->
-                <div id="analysis-result-container" class="hidden w-full text-left bg-zinc-900 p-4 rounded-2xl border border-zinc-800 text-xs leading-relaxed text-gray-300">
+                <div id="analysis-result-container" class="hidden w-full text-left bg-zinc-900 p-4 rounded-2xl border border-zinc-800 text-xs leading-relaxed text-gray-300 mt-4">
                 </div>
             </div>
 
             <!-- Modal Footer / Input (For Chat Tab) -->
             <div id="chat-input-area" class="p-3 border-t border-zinc-800 bg-zinc-950 flex items-center space-x-2">
                 <input type="text" id="chat-message-input" placeholder="Escribe tu consulta..." class="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-accent transition-all" onkeypress="handleKeyPress(event)">
-                <button onclick="sendChatMessage()" class="w-10 h-10 rounded-xl bg-accent hover:bg-yellow-600 text-black flex items-center justify-center shadow-lg transition-colors">
+                <button onclick="sendChatMessage()" class="w-10 h-10 rounded-xl bg-accent hover:bg-yellow-600 text-black flex items-center justify-center shadow-lg transition-colors flex-shrink-0">
                     <i class="fa-solid fa-paper-plane text-xs"></i>
                 </button>
             </div>
@@ -289,8 +313,19 @@
 
         // --- AI ASSISTANT LOGIC ---
 
-        const apiKey = "AIzaSyB6qN0ngSAbFvjUxEHh6mzBZ5__jI0viSc"; // Canvas handles this automatically
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;        let activeTab = 'chat';
+        // Configuración inteligente de la API: 
+        // Detecta automáticamente si estás en la vista previa o en tu página de GitHub
+        let apiKey = ""; 
+        let modelName = "gemini-2.5-flash-preview-09-2025"; 
+
+        if (window.location.hostname !== "" && !window.location.hostname.includes("usercontent.goog")) {
+            apiKey = "AIzaSyB6qN0ngSAbFvjUxEHh6mzBZ5__jI0viSc"; // Tu clave real se usará automáticamente en GitHub
+            modelName = "gemini-1.5-flash"; // El modelo público correcto se usará en GitHub
+        }
+
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+        let activeTab = 'chat';
         let selectedBase64Image = null;
         let chatHistory = [];
 
@@ -370,6 +405,13 @@
                 });
 
                 const result = await response.json();
+                
+                // Manejo de errores de la API
+                if (!response.ok) {
+                    console.error("Error API:", result);
+                    throw new Error(result.error?.message || "Error en la petición");
+                }
+
                 const aiResponseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 removeLoadingMessage(loadingId);
@@ -377,11 +419,12 @@
                     appendAiMessage(aiResponseText);
                     chatHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
                 } else {
-                    appendAiMessage("Disculpa, tuve un problema procesando tu consulta.");
+                    appendAiMessage("Disculpa, tuve un problema procesando tu consulta. Por favor, intenta de nuevo.");
                 }
             } catch (error) {
+                console.error("Catch Error:", error);
                 removeLoadingMessage(loadingId);
-                appendAiMessage("Error de conexión. Por favor, intenta de nuevo o contáctanos por WhatsApp.");
+                appendAiMessage("Ha ocurrido un error de conexión con el asistente virtual. Por favor, contáctanos directamente por WhatsApp.");
             }
         }
 
@@ -389,7 +432,7 @@
             const chatContainer = document.getElementById('content-chat');
             const msgHtml = `
                 <div class="flex items-start justify-end gap-2.5">
-                    <div class="bg-accent/10 border border-accent/20 p-3 rounded-2xl rounded-tr-none max-w-[85%] text-xs text-gray-200 leading-relaxed shadow-sm">
+                    <div class="bg-accent/10 border border-accent/20 p-3 rounded-2xl rounded-tr-none max-w-[85%] text-xs text-gray-200 leading-relaxed shadow-sm break-words">
                         ${text}
                     </div>
                 </div>`;
@@ -402,10 +445,10 @@
             const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
             const msgHtml = `
                 <div class="flex items-start gap-2.5">
-                    <div class="w-7 h-7 rounded bg-zinc-800 flex items-center justify-center text-accent text-xs">
+                    <div class="w-7 h-7 rounded bg-zinc-800 flex items-center justify-center text-accent text-xs flex-shrink-0">
                         <i class="fa-solid fa-robot"></i>
                     </div>
-                    <div class="bg-zinc-900 p-3 rounded-2xl rounded-tl-none max-w-[85%] text-xs text-gray-300 leading-relaxed shadow-md">
+                    <div class="bg-zinc-900 p-3 rounded-2xl rounded-tl-none max-w-[85%] text-xs text-gray-300 leading-relaxed shadow-md break-words">
                         ${formattedText}
                     </div>
                 </div>`;
@@ -417,7 +460,7 @@
             const uniqueId = 'loading-' + Date.now();
             const msgHtml = `
                 <div id="${uniqueId}" class="flex items-start gap-2.5">
-                    <div class="w-7 h-7 rounded bg-zinc-800 flex items-center justify-center text-accent text-xs animate-pulse">
+                    <div class="w-7 h-7 rounded bg-zinc-800 flex items-center justify-center text-accent text-xs animate-pulse flex-shrink-0">
                         <i class="fa-solid fa-robot animate-spin"></i>
                     </div>
                     <div class="bg-zinc-900 p-3 rounded-2xl rounded-tl-none text-xs text-gray-500">
@@ -447,6 +490,7 @@
             document.getElementById('preview-filename').innerText = file.name;
             const reader = new FileReader();
             reader.onload = function(e) {
+                // Remove data URL prefix to get pure base64
                 selectedBase64Image = e.target.result.split(',')[1];
                 document.getElementById('image-preview').src = e.target.result;
                 document.getElementById('image-preview-container').classList.remove('hidden');
@@ -496,18 +540,25 @@
                 });
 
                 const result = await response.json();
+                
+                 if (!response.ok) {
+                    console.error("Error API:", result);
+                    throw new Error(result.error?.message || "Error en la petición");
+                }
+
                 const aiResultText = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 if (aiResultText) {
                     const formattedResult = aiResultText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
                     resultContainer.innerHTML = `
-                        <div class="text-accent font-bold mb-2"><i class="fa-solid fa-wand-magic-sparkles"></i> Análisis Completado</div>
-                        <div>${formattedResult}</div>`;
+                        <div class="text-accent font-bold mb-2 flex items-center"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Análisis Completado</div>
+                        <div class="break-words">${formattedResult}</div>`;
                 } else {
-                    resultContainer.innerHTML = `<span class="text-red-400">No pude identificar la pieza.</span>`;
+                    resultContainer.innerHTML = `<span class="text-red-400">No pude identificar la pieza claramente en la imagen.</span>`;
                 }
             } catch (error) {
-                resultContainer.innerHTML = `<span class="text-red-400">Error de conexión.</span>`;
+                console.error("Catch Error:", error);
+                resultContainer.innerHTML = `<span class="text-red-400">Error de conexión al analizar la imagen. Intenta de nuevo más tarde.</span>`;
             } finally {
                 resultContainer.classList.remove('hidden');
                 analyzeBtn.disabled = false;
@@ -517,3 +568,4 @@
     </script>
 </body>
 </html>
+```eof
