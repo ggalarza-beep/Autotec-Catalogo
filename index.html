@@ -319,7 +319,9 @@
         let modelName = "gemini-2.5-flash-preview-09-2025"; 
 
         if (window.location.hostname !== "" && !window.location.hostname.includes("usercontent.goog")) {
-            apiKey = "AIzaSyB6qN0ngSAbFvjUxEHh6mzBZ5__jI0viSc"; // Tu clave real se usará automáticamente en GitHub
+            // 👇👇👇 ¡AQUÍ DEBES PEGAR TU CLAVE DE GOOGLE! 👇👇👇
+            // Reemplaza "PON_TU_CLAVE_REAL_AQUI" con la clave que generaste en Google AI Studio
+            apiKey = "AIzaSyDUhDF32TNYaKsbpCoCKscPvwWua4EvMGQ"; 
             modelName = "gemini-1.5-flash"; // El modelo público correcto se usará en GitHub
         }
 
@@ -424,7 +426,13 @@
             } catch (error) {
                 console.error("Catch Error:", error);
                 removeLoadingMessage(loadingId);
-                appendAiMessage("Ha ocurrido un error de conexión con el asistente virtual. Por favor, contáctanos directamente por WhatsApp.");
+                
+                // Mostrar el error exacto en pantalla para ayudar a diagnosticar
+                if (apiKey === "PON_TU_CLAVE_REAL_AQUI" || apiKey.includes("AIzaSyB6qN")) {
+                     appendAiMessage("⚠️ **Falta tu Clave API:** Debes editar tu archivo en GitHub y pegar la clave que sacaste de Google AI Studio para que funcione aquí.");
+                } else {
+                     appendAiMessage("⚠️ **Error técnico:** " + error.message);
+                }
             }
         }
 
@@ -558,7 +566,11 @@
                 }
             } catch (error) {
                 console.error("Catch Error:", error);
-                resultContainer.innerHTML = `<span class="text-red-400">Error de conexión al analizar la imagen. Intenta de nuevo más tarde.</span>`;
+                if (apiKey === "PON_TU_CLAVE_REAL_AQUI" || apiKey.includes("AIzaSyB6qN")) {
+                     resultContainer.innerHTML = `<span class="text-red-400">⚠️ Error: Falta poner tu API Key real de Google en el código.</span>`;
+                } else {
+                     resultContainer.innerHTML = `<span class="text-red-400">⚠️ Error de conexión: ${error.message}</span>`;
+                }
             } finally {
                 resultContainer.classList.remove('hidden');
                 analyzeBtn.disabled = false;
@@ -568,4 +580,3 @@
     </script>
 </body>
 </html>
-```eof
