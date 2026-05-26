@@ -313,16 +313,14 @@
 
         // --- AI ASSISTANT LOGIC ---
 
-        // Configuración inteligente de la API: 
-        // Detecta automáticamente si estás en la vista previa o en tu página de GitHub
+        // Configuración de la API:
         let apiKey = ""; 
-        let modelName = "gemini-2.5-flash-preview-09-2025"; 
+        const modelName = "gemini-2.5-flash-preview-09-2025"; 
 
+        // Detecta automáticamente si estás en la vista previa o en tu página de GitHub
         if (window.location.hostname !== "" && !window.location.hostname.includes("usercontent.goog")) {
-            // 👇👇👇 ¡AQUÍ DEBES PEGAR TU CLAVE DE GOOGLE! 👇👇👇
-            // Reemplaza "PON_TU_CLAVE_REAL_AQUI" con la clave que generaste en Google AI Studio
+            // Tu nueva clave API de Google AI Studio
             apiKey = "AIzaSyDUhDF32TNYaKsbpCoCKscPvwWua4EvMGQ"; 
-            modelName = "gemini-1.5-flash"; // El modelo público correcto se usará en GitHub
         }
 
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
@@ -411,7 +409,7 @@
                 // Manejo de errores de la API
                 if (!response.ok) {
                     console.error("Error API:", result);
-                    throw new Error(result.error?.message || "Error en la petición");
+                    throw new Error(result.error?.message || "Error en la petición de la API");
                 }
 
                 const aiResponseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -426,13 +424,7 @@
             } catch (error) {
                 console.error("Catch Error:", error);
                 removeLoadingMessage(loadingId);
-                
-                // Mostrar el error exacto en pantalla para ayudar a diagnosticar
-                if (apiKey === "PON_TU_CLAVE_REAL_AQUI" || apiKey.includes("AIzaSyB6qN")) {
-                     appendAiMessage("⚠️ **Falta tu Clave API:** Debes editar tu archivo en GitHub y pegar la clave que sacaste de Google AI Studio para que funcione aquí.");
-                } else {
-                     appendAiMessage("⚠️ **Error técnico:** " + error.message);
-                }
+                appendAiMessage("⚠️ **Error de conexión:** No se pudo contactar con el servidor. Por favor, verifica tu conexión a internet o contáctanos directamente por WhatsApp. Detalle: " + error.message);
             }
         }
 
@@ -551,7 +543,7 @@
                 
                  if (!response.ok) {
                     console.error("Error API:", result);
-                    throw new Error(result.error?.message || "Error en la petición");
+                    throw new Error(result.error?.message || "Error en la petición de la API");
                 }
 
                 const aiResultText = result.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -566,11 +558,7 @@
                 }
             } catch (error) {
                 console.error("Catch Error:", error);
-                if (apiKey === "PON_TU_CLAVE_REAL_AQUI" || apiKey.includes("AIzaSyB6qN")) {
-                     resultContainer.innerHTML = `<span class="text-red-400">⚠️ Error: Falta poner tu API Key real de Google en el código.</span>`;
-                } else {
-                     resultContainer.innerHTML = `<span class="text-red-400">⚠️ Error de conexión: ${error.message}</span>`;
-                }
+                resultContainer.innerHTML = `<span class="text-red-400">⚠️ Error de conexión: ${error.message}</span>`;
             } finally {
                 resultContainer.classList.remove('hidden');
                 analyzeBtn.disabled = false;
@@ -580,3 +568,4 @@
     </script>
 </body>
 </html>
+```eof
