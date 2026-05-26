@@ -290,9 +290,7 @@
         // --- AI ASSISTANT LOGIC ---
 
         const apiKey = "AIzaSyB6qN0ngSAbFvjUxEHh6mzBZ5__jI0viSc"; // Canvas handles this automatically
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-
-        let activeTab = 'chat';
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;        let activeTab = 'chat';
         let selectedBase64Image = null;
         let chatHistory = [];
 
